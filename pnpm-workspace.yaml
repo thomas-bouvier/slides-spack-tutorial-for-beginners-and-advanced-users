@@ -1,4 +1,0 @@
-onlyBuiltDependencies:
-  - cytoscape
-  - esbuild
-  - playwright-chromium

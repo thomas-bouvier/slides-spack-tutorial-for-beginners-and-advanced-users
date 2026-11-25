@@ -19,16 +19,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
-      - run: pnpm install --frozen-lockfile
+      - run: npm ci
 
-      - run: pnpm run build --base /slides-spack-tutorial-for-beginners/
+      - run: npm run build -- --base /slides-spack-tutorial-for-beginners/
 
       - uses: actions/upload-pages-artifact@v3
         with:
