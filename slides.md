@@ -26,8 +26,8 @@ mdc: false
 # seoMeta:
 #  ogImage: https://cover.sli.dev
 fonts:
-  mono: iosevka-normal
-  local: iosevka-normal
+  mono: iosevka-normal Web
+  local: iosevka-normal Web
 favicon: https://numpex-pc5.gitlabpages.inria.fr/tutorials/images/favicon.png
 
 hideInToc: true
@@ -109,17 +109,14 @@ To install Spack, make sure you have Python & Git. Then, we must clone the repo 
 
 ```ansi
 [0;90m# ==> Clone Spack[0m
-$ git clone --depth=100 https://github.com/spack/spack.git ~/spack
-$ cd spack
-$ git checkout af1edd4 [0;90m# Locked Spack commit for the tutorial[0m
-$ cd ~
+$ git clone -b releases/v1.2 --single-branch --depth=100 https://github.com/spack/spack.git ~/spack
 
 [0;90m# ==> Activate Spack[0m
 $ . spack/share/spack/setup-env.sh
 [0;90m# For Fish Shell: source spack/share/spack/setup-env.fish[0m
 
 $ spack --version
-1.2.0.dev0 (af1edd44f13ed3fb53c7f647c7e25280f8bc817e)
+1.2.2 (3e19345b6e12f5ff1b874f4059622fc6a1fd804a)
 ```
 
 The Spack executable and the versions for all packages are located in the Spack folder `~/spack`.
