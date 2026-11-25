@@ -1,4 +1,4 @@
-# slides-spack-tutorial-for-beginners-2
+# slides-spack-tutorial-for-beginners-and-advanced-users
 
 This Numpex tutorial related to software packaging will specifically target beginners with the Spack package manager. The tutorial will introduce Spack installation, base commands, specifications, configs, and environments. We are also going to cover some slightly more advanced topics, like using the official Numpex binary cache and development workflows. No prior experience with Spack is required.
 
