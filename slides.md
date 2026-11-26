@@ -7,7 +7,7 @@ colorSchema: auto
 # background: https://cdn.jsdelivr.net/gh/slidevjs/slidev-covers@main/static/tZr3_JuURZA.webp
 background: https://images.pexels.com/photos/11047223/pexels-photo-11047223.jpeg?cs=srgb&dl=pexels-vlad-samoylik-173187996-11047223.jpg&fm=jpg&w=1920&h=1282
 # some information about your slides (markdown enabled)
-title: Spack Tutorial for Beginners
+title: Spack Tutorial for Beginners and Advanced Users
 info: |
   ## Slidev Starter Template
   Presentation slides for developers.
