@@ -104,6 +104,7 @@ Host *.g5k
 
 ---
 
+## Installing Spack core
 
 To install Spack, make sure you have Python & Git. Then, we must clone the repo on the Grid'5000 frontend:
 
@@ -119,8 +120,35 @@ $ spack --version
 1.2.2 (3e19345b6e12f5ff1b874f4059622fc6a1fd804a)
 ```
 
-The Spack executable and the versions for all packages are located in the Spack folder `~/spack`.
+Spack core is installed in `~/spack`.
 
+
+
+---
+
+## Package recipes repository
+
+Spack recipes are separate from Spack core.
+
+```
+$ spack config blame repos
+```
+
+The default config is as follows:
+
+```yaml
+---                                            repos:
+~/spack/etc/spack/defaults/base/repos.yaml:14    builtin:
+~/spack/etc/spack/defaults/base/repos.yaml:15      git: https://github.com/spack/spack-packages.git
+~/spack/etc/spack/defaults/base/repos.yaml:16      branch: releases/v2026.06
+```
+
+When executing the first command that needs recipes (`spack list`, `spack install`, ...), Spack clones that repository into `~/.spack/package_repos/<url-hash>/`
+
+
+```
+$ spack cd --repo builtin
+```
 
 
 ---

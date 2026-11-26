@@ -87,23 +87,20 @@ layout: center
 <div class="grid grid-cols-[1fr_max-content]">
   <div>
 
-  <p>
-    <strong v-mark.red="-1">Application developers</strong>
-  </p>
+  - <strong v-mark.red="-1">Application developers</strong>
 
-  - Ease difficulty in building and developing apps and libraries.
-  - Portable solution from a laptop to the supercomputer.
+    - Ease difficulty in building and developing apps and libraries
+    - Portable solution from a laptop to the supercomputer
 
-  <p>
-    <strong v-mark.red="-1">System administrators</strong>
-  </p>
+  - <strong v-mark.red="-1">System administrators</strong>
 
-  - Ease package administration and testing on supercomputers.
-  - Align interests of developers and sysadmins.
+    - Ease package administration and testing on supercomputers
+    - Align interests of developers and sysadmins
 
-  **Application users**
-  - Provide ready-to-use solutions for deployments (modules can be generated more easily).
-  - Fearless migrations between machines and updates.
+  - **Application users**
+
+    - Provide ready-to-use solutions for deployments (modules can be generated more easily)
+    - Fearless migrations between machines and updates
 
 
   </div>
