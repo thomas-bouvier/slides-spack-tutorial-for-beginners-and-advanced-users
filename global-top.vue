@@ -5,7 +5,7 @@
   >
   <div class="flex flex-row items-center gap-4">
     <img src="./Logo_France_2030.svg" width="30" class="bg-white rounded-full">
-    Spack Tutorial for Beginners - NumPEx Exa-DI
+    Spack Tutorial for Beginners and Advanced Users - NumPEx Exa-DI
   </div>
   <div>
     {{ $nav.currentPage }} / {{ $nav.total }}

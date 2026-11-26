@@ -6,10 +6,10 @@
 
 ```bash
 # Detect externals automatically
-$ spack external find openmpi
+ % spack external find openmpi
 
 # See configured externals
-$ spack external list
+ % spack external list
 ```
 
 
@@ -21,6 +21,3 @@ packages:
       prefix: /opt/openmpi-4.1.2
     buildable: false  # Optional: prevents Spack from building its own
 ```
-
-
-

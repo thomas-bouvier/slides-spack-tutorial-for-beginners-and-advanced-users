@@ -25,12 +25,17 @@ layout: center
 
 ## Streamlining the setup of a complex stack
 
+<br>
+
 <div class="grid grid-cols-[1fr_max-content]">
   <div>
 
   **How to install these dependencies?**
+
   - <span v-mark.red="1">Complex and modular application</span> with build or link-type dependencies, multiple languages, and various build tools
+
   - Different systems, environments, local machines or HPC clusters
+
   - Hard to be an expert across the entire toolchain; we want a solution that's <span v-mark.red="1">easy</span> enough
 
   </div>

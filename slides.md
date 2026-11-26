@@ -84,7 +84,7 @@ These are some of the key insights to understand how Spack works:
 
 
 ```
-$ ssh lille.g5k
+ % ssh lille.g5k
 ```
 
 Connection guide: https://www.grid5000.fr/w/Getting_Started#Recommended_tips_and_tricks_for_an_efficient_use_of_Grid.275000
@@ -110,13 +110,13 @@ To install Spack, make sure you have Python & Git. Then, we must clone the repo 
 
 ```ansi
 [0;90m# ==> Clone Spack[0m
-$ git clone -b releases/v1.2 --single-branch --depth=100 https://github.com/spack/spack.git ~/spack
+ % git clone -b releases/v1.2 --single-branch --depth=100 https://github.com/spack/spack.git ~/spack
 
 [0;90m# ==> Activate Spack[0m
-$ . spack/share/spack/setup-env.sh
+ % . spack/share/spack/setup-env.sh
 [0;90m# For Fish Shell: source spack/share/spack/setup-env.fish[0m
 
-$ spack --version
+ % spack --version
 1.2.2 (3e19345b6e12f5ff1b874f4059622fc6a1fd804a)
 ```
 
@@ -131,7 +131,7 @@ Spack core is installed in `~/spack`.
 Spack recipes are separate from Spack core.
 
 ```
-$ spack config blame repos
+ % spack config blame repos
 ```
 
 The default config is as follows:
@@ -147,8 +147,32 @@ When executing the first command that needs recipes (`spack list`, `spack instal
 
 
 ```
-$ spack cd --repo builtin
+ % spack cd --repo builtin
 ```
+
+
+---
+
+## Compilers
+
+```
+ % spack compiler list
+==> Available compilers
+-- gcc debian13-x86_64 ------------------------------------------
+[e]  gcc@13.2.0  [e]  gcc@10.2.1
+```
+
+The [e] flag means the compiler was detected as external: these packages do not come from the recipes repository
+
+Let's remove the most recent compiler for now:
+
+```
+ % spack compiler remove gcc@13.2.0
+==> The following compilers have been removed:
+
+    gcc@=13.2.0
+```
+
 
 
 ---
@@ -158,11 +182,11 @@ $ spack cd --repo builtin
 Web interface: https://packages.spack.io
 
 ```ansi
-$ spack list kokkos
+ % spack list kokkos
 hpx-kokkos  kokkos  kokkos-fft  kokkos-kernels  kokkos-nvcc-wrapper  kokkos-tools  py-pennylane-lightning-kokkos  py-pykokkos-base
 ==> 8 packages
 
-$ spack info kokkos
+ % spack info kokkos
 [1;34mCMakePackage:   [0mkokkos
 
 [1;34mDescription:[0m
@@ -180,22 +204,21 @@ You can also use `spack list 'py-*'`.
 ## Package specs
 
 ```ansi{1,2}
-$ spack spec kokkos
- -   kokkos@4.7.03~aggressive_vectorization~atomics_bypass~cmake_lang~compiler_warnings+complex_align~cuda~debug~debug_bounds_check+debug_dualview_modify_check~deprecated_code~hip_relocatable_device_code~hpx~hpx_async_dispatch~hwloc~ipo~memkind~numactl~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=17 generator=make intel_gpu_arch=none platform=linux os=debian11 target=x86_64 %cxx=gcc@10.2.1
- -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian11 target=x86_64 %c,cxx=gcc@10.2.1
- -           ^curl@8.18.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian11 target=x86_64 %c,cxx=gcc@10.2.1
- -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian11 target=x86_64 %c,cxx=gcc@10.2.1
- -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian11 target=x86_64 %c=gcc@10.2.1
- -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian11 target=x86_64 %c=gcc@10.2.1
- -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian11 target=x86_64 %c,cxx=gcc@10.2.1
- -                   ^ca-certificates-mozilla@2026-03-19 build_system=generic platform=linux os=debian11 target=x86_64 
+ % spack spec kokkos               
+ -   kokkos@4.7.04~aggressive_vectorization~atomics_bypass~cmake_lang~compiler_warnings+complex_align~cuda~debug~debug_bounds_check+debug_dualview_modify_check~deprecated_code~hip_relocatable_device_code~hpx~hpx_async_dispatch~hwloc~ipo~memkind~numactl~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=17 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@10.2.1
+ -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
+ -           ^curl@8.20.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
+ -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
+ -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@10.2.1
+ -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@10.2.1
+ -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
 ...
 ```
 
 Instead of package names, Spack uses **package specs**: a concrete spec is like a name, but it has a version, compiler, architecture, and build options associated with it.
 
 <code>
-kokkos <span class="color-cyan">@4.7.03</span> <span class="color-blue">~aggressive_vectorization ~atomics_bypass</span> ...
+kokkos <span class="color-cyan">@4.7.04</span> <span class="color-blue">~aggressive_vectorization ~atomics_bypass</span> ...
 </code>
 
 Going from a package name to such a concrete spec is called **concretizing**.
@@ -205,19 +228,19 @@ Going from a package name to such a concrete spec is called **concretizing**.
 Spec documentation: https://spack.readthedocs.io/en/latest/package_fundamentals.html#specs-dependencies
 
 <code>
-kokkos <span class="color-cyan">@4.7.03</span> <span class="color-blue">~aggressive_vectorization</span> <span class="color-pink">target=x86_64 %c,cxx=gcc@10.2.1</span>
+kokkos <span class="color-cyan">@4.7.04</span> <span class="color-blue">~aggressive_vectorization</span> <span class="color-pink">target=nehalem %cxx=gcc@10.2.1</span>
 </code>
 
-- <code class="color-cyan">@4.7.03</code>: [Version specifier](https://spack.readthedocs.io/en/latest/basic_usage.html#version-specifier).
+- <code class="color-cyan">@4.7.04</code>: [Version specifier](https://spack.readthedocs.io/en/latest/basic_usage.html#version-specifier).
   - Spack concretizes packages to a fixed version <code class="color-cyan">@X.Y.Z</code>.
   - As a user, you can specify a version range, e.g:
     - <code class="color-cyan">@4.7:</code>: Take <code class="color-cyan">@4.7.00</code>, <code class="color-cyan">@4.7.01</code>, etc. / <code class="color-cyan">@:5</code>: Up to v5 included <code class="color-cyan">@5.0.0</code>, <code class="color-cyan">@5.1.0</code>, etc.
 - <code class="color-blue">~aggressive_vectorization</code>: Variant specifier.
   - <code class="color-blue">+</code> means the feature is enabled / <code class="color-blue">~</code> means the feature is disabled.
   - Variants can also be <code class="color-blue">name=value</code> pairs.
-- <code class="color-pink">target=x86_64</code>: Target specifier.
+- <code class="color-pink">target=nehalem</code>: Target specifier.
   - Similar to variants, but present in all packages.
-- <code class="color-pink">%c,cxx=gcc@10.2.1</code>: Dependencies on compilers are also modeled by specs.
+- <code class="color-pink">%cxx=gcc@10.2.1</code>: Dependencies on compilers are also modeled by specs.
 
 ---
 
@@ -242,7 +265,7 @@ For a given set of specs, the concretizer solves all constraints (SAT problem) t
 ## Concretizing `kokkos@5`
 
 ```
-$ spack spec kokkos@5     
+ % spack spec kokkos@5     
 ==> Error: failed to concretize `kokkos@5` for the following reasons:
      1. kokkos: '%gcc@:10.3' conflicts with '@5:'
      2. kokkos: '%gcc@:10.3' conflicts with '@5:'
@@ -254,7 +277,7 @@ $ spack spec kokkos@5
 The concretizer cannot solve the set of constraints needed by `kokkos@5`: a recent `gcc` is needed.
 
 ```
-$ spack compiler list 
+ % spack compiler list 
 ==> Available compilers
 -- gcc debian11-x86_64 ------------------------------------------
 [e]  gcc@10.2.1
@@ -281,50 +304,49 @@ With Spack, `gcc` is typically brought by an external system package.
 
 Let's inspect modules made available to us on Grid'5000:
 
+```bash
+module av gcc
 ```
-$ module av                
----------------------------------------------------------------------------------------------- /grid5000/spack/v1/share/spack/modules/linux-debian11-x86_64_v2 ----------------------------------------------------------------------------------------------
-   gcc/10.4.0_gcc-10.4.0             intel-oneapi-vtune/2022.3.0_gcc-10.4.0               pmix/4.1.2_gcc-10.4.0                                         tau/2.32_gcc-10.4.0-openmpi
-   gcc/12.2.0_gcc-10.4.0             intel-oneapi-vtune/2023.0.0_gcc-10.4.0        (D)    py-numpy/1.23.3_gcc-10.4.0-intelmpi-python-3.9.13             ucx/1.13.1_gcc-10.4.0-compat
-   gcc/13.2.0_gcc-10.4.0      (D)    julia/1.8.2_gcc-10.4.0                               py-numpy/1.24.2_gcc-10.4.0-python-3.9.13               (D)    ucx/1.13.1_gcc-10.4.0                   (D)
+```console
+   gcc-toolchain/10.5.0    gcc-toolchain/11.5.0    gcc-toolchain/12.5.0    gcc-toolchain/13.3.0    gcc-toolchain/14.3.0 (D)
 ```
 
-```
-$ module load gcc/13
+You could do:
+
+```bash
+module load gcc-toolchain/12.5.0
 ```
 
 
 The following command makes Spack aware of the <span v-mark.red="0">external system `gcc`</span>.
 
-```
-$ spack compiler find
-$ spack compiler list
+```bash
+spack compiler find
+spack compiler list
 ```
 
-The system `gcc` should have been configured in `~/.spack/packages.yaml`.
+The system `gcc@14.2.0` should have been configured in `~/.spack/packages.yaml`.
 
 
 ---
 
 ```ansi{1,2}
-$ spack spec kokkos@5
- -   kokkos@5.1.0~aggressive_vectorization~atomics_bypass~cmake_lang+complex_align~cuda~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian11 target=x86_64 %cxx=gcc@13.2.0
- -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0
- -           ^curl@8.18.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0
- -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0
- -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
- -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
- -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0
- -                   ^ca-certificates-mozilla@2026-03-19 build_system=generic platform=linux os=debian11 target=x86_64 
- -                   ^perl@5.42.0+cpanm+opcode+open+shared+threads build_system=generic platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
- -                       ^berkeley-db@18.1.40+cxx~docs+stl build_system=autotools patches:=26090f4,b231fcc platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0
- -                       ^bzip2@1.0.8~debug~pic+shared build_system=generic platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
+ % spack spec kokkos@5          
+ -   kokkos@5.1.1~aggressive_vectorization~cmake_lang+complex_align~cuda~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.3.0
+ -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
+ -           ^curl@8.20.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
+ -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
+ -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
+ -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
+ -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
+ -                   ^ca-certificates-mozilla@2026-03-19 build_system=generic platform=linux os=debian13 target=nehalem 
+ -                   ^perl@5.42.0+cpanm+opcode+open+shared+threads build_system=generic platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
  ...
 ```
 
 The concretization is now successfull for `kokkos@5`.
 
-Notice the <code class="color-pink">`target=x86_64 %c=gcc@13.2.0`</code> in the concretized specs.
+Notice the <code class="color-pink">`target=nehalem %c=gcc@14.3.0`</code> in the concretized specs.
 
 
 
@@ -341,14 +363,14 @@ Notice the <code class="color-pink">`target=x86_64 %c=gcc@13.2.0`</code> in the 
 
 The following command will set <span v-mark.red="1">where packages will be built. Important on Grid'5000.</span>
 
-```
-$ spack config --scope defaults:base add config:build_stage:/tmp/spack-stage
+```bash
+spack config --scope defaults:base add config:build_stage:/tmp/spack-stage
 ```
 
 You can also edit the config file manually as follows:
 
-```
-$ spack config --scope defaults:base edit config
+```bash
+spack config --scope defaults:base edit config
 ```
 
 
@@ -356,9 +378,9 @@ $ spack config --scope defaults:base edit config
 
 You may set the `install_tree` to [Group Storage](https://www.grid5000.fr/w/Group_Storage) over NFS:
 
-```
-$ ln - s /srv/storage/my-group-storage@storage1.lyon.grid5000.fr/ /my-spack
-$ spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
+```bash
+ln -s /srv/storage/my-group-storage@storage1.lyon.grid5000.fr/ /my-spack
+spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
 ```
 
 </v-click>
@@ -370,19 +392,18 @@ $ spack config --scope defaults:base add config:install_tree:root:/my-spack/spac
 
 So, we're going to install Kokkos and some other packages, how do we do it?
 
-```
-$ spack install kokkos
-...
+```bash
+spack install kokkos
 ```
 
 ```
-Progress: 19/21  +/-: 4 jobs  /: filter  v: logs  n/p: next/prev
+Progress: 10/19  +/-: 4 jobs  /: filter  v: logs  n/p: next/prev
 ```
 
 Once installed, you can make the package available with:
 
-```
-$ spack load kokkos
+```bash
+spack load kokkos
 ```
 
 <v-click>
@@ -390,9 +411,9 @@ $ spack load kokkos
 ...but let's use <span v-mark.red="1">environments</span> instead!
 
 
-- 📦 Multiple root specs -- run a single install command for all the packages you need.
-- 👥 Shareable / versionable -- share the environment file `spack.yaml` with your colleagues.
-- 🔒 Isolated -- environments won't conflict between each other.
+- 📦 Multiple root specs -- run a single install command for all the packages you need
+- 👥 Shareable / versionable -- share the environment file `spack.yaml` with your colleagues
+- 🔒 Isolated -- environments won't conflict between each other
 
 </v-click>
 
@@ -413,12 +434,15 @@ An environment is used to group a set of specs intended for some purpose to be b
 
 <br/>
 
-```ansi
-$ spack env create gysela-io
+```bash
+spack env create gysela-io
+```
+```console
 ==> Created environment gysela-io in: /home/tbouvier/spack/var/spack/environments/gysela-io
 ==> Activate with: spack env activate gysela-io
-
-$ spack env activate gysela-io
+```
+```bash
+spack env activate gysela-io
 ```
 
 `spack env status` is usefull to check which environment in currently activated.
@@ -454,9 +478,11 @@ To add packages to the (currently activated) environment, we have 2 options:
 - Manually edit the `spack.yaml` file using `spack config edit` (or vim).
 - Call `spack add <spec>`, which will edit environment for us.
 
-```ansi
-$ spack add kokkos
-[1;34m==>[0m Adding kokkos to environment gysela-io
+```bash
+spack add kokkos
+```
+```console
+==> Adding kokkos to environment gysela-io
 ```
 
 <br/>
@@ -474,19 +500,16 @@ spack:
 
 We could build a CUDA-enabled kokkos instead:
 
-```ansi{1,2,7}
-$ spack add kokkos +wrapper +cuda cuda_arch=60
- -   kokkos@5.1.0~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cuda_arch=60 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian11 target=x86_64 %cxx=gcc@13.2.0
- -       ^cmake@3.30.9~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release patches:=dbc3892,fdea723 platform=linux os=debian11 target=x86_64 %c,cxx=gcc@10.2.1
- -           ^compiler-wrapper@1.0 build_system=generic platform=linux os=debian11 target=x86_64 
-[e]          ^gcc@10.2.1~binutils+bootstrap~graphite~nvptx~piclibs~profiled~strip build_system=autotools build_type=RelWithDebInfo languages:='c,c++,fortran' platform=linux os=debian11 target=x86_64 
+```ansi{1,2,6}
+ % spack add kokkos+cuda cuda_arch=60
+ -   rmajlzg  kokkos@5.1.1~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cuda_arch=60 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.2.0
+[+]  u7g2e3v      ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.2.0
 ...
- -       ^cuda@12.9.1~allow-unsupported-compilers~dev build_system=generic platform=linux os=debian11 target=x86_64 
- -           ^coreutils@9.10~gprefix build_system=autotools platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
- -           ^gzip@1.14 build_system=autotools platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0
- -           ^libxml2@2.13.5~http+pic~python+shared build_system=autotools platform=linux os=debian11 target=x86_64 %c=gcc@10.2.1
- -               ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian11 target=x86_64 %c=gcc@10.2.1
- -               ^xz@5.6.3~pic build_system=autotools libs:=shared,static platform=linux os=debian11 target=x86_64 %c=gcc@10.2.1
+[+]  yonl2oe      ^compiler-wrapper@1.1.0 build_system=generic platform=linux os=debian13 target=nehalem 
+ -   hyaqk2m      ^cuda@12.9.1~allow-unsupported-compilers~dev build_system=generic platform=linux os=debian13 target=nehalem 
+ -   bimojkd          ^coreutils@9.10~gprefix build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+ -   4phcwny          ^gzip@1.14 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+ -   wwpmkxc          ^libxml2@2.13.9~http+pic~python+shared build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
 ...
 ```
 
@@ -504,8 +527,8 @@ Say I am developing a C++ app in the Gysela system:
 - Testing the CPU performance scaling for 5D particle distribution functions.
 
 ```
-$ cd ~
-$ git clone --recursive https://github.com/thomas-bouvier/gysela-mini-app_io
+ % cd ~
+ % git clone --recursive https://github.com/thomas-bouvier/gysela-mini-app_io
 ```
 
 **... the package for my app is not in Spack yet**
@@ -518,8 +541,8 @@ $ git clone --recursive https://github.com/thomas-bouvier/gysela-mini-app_io
 The work of writing the `spack.yaml` file has been done in the repository you just cloned.
 
 ```
-$ rm ~/spack/var/spack/environments/gysela-io/spack.yaml
-$ cp ~/gysela-mini-app_io/spack.yaml ~/spack/var/spack/environments/gysela-io/
+ % rm ~/spack/var/spack/environments/gysela-io/spack.yaml
+ % cp ~/gysela-mini-app_io/spack.yaml ~/spack/var/spack/environments/gysela-io/
 ```
 
 </v-click>
@@ -545,10 +568,10 @@ Concretization reads specs from `spack.yaml` to calculate the DAG of concrete de
 This will generate a `spack.lock` locking every version of every package in place.
 
 ```ansi
-$ spack concretize
+ % spack concretize
 
 [0;90m# To force concretization and overwrite the spack.lock file[0m
-$ spack concretize --force
+ % spack concretize --force
 ```
 
 You may commit the `spack.lock` alongside `spack.yaml` to improve reproducibility.
@@ -584,7 +607,7 @@ It depends on the computing center. <span v-mark.red="1">By default, you should 
 
 ```ansi
 [0;90m# Interactive shell on a [0;33mCPU[0m partition[0m
-$ oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
+ % oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
   -I -p [0;33mchiclet[0m -l host=1/core=4,walltime=2:00:00
 
 # Use chifflot for a GPU node with host=1/gpu=1
@@ -595,9 +618,9 @@ $ oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
 We must remember to load Spack here:
 
 ```
-$ . spack/share/spack/setup-env.sh
-$ module load gcc/13
-$ spack env activate gysela-io && spack install
+ % . spack/share/spack/setup-env.sh
+ % module load gcc/13
+ % spack env activate gysela-io && spack install
 ```
 
 </v-click>
@@ -644,7 +667,7 @@ Adding such a binary cache will influence the concretizer, which will try to reu
 ---
 
 ```ansi {1,2}
-tbouvier@chifflot-2 $ spack spec
+tbouvier@chifflot-2  % spack spec
 [0;90m - [0m  cmake[0;36m@3.31.6[0m[0;94m~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release[0m[0;35m arch=linux-debian11-skylake_avx512[0m
 [0;90m - [0m      ^compiler-wrapper[0;36m@1.0[0m[0;94m build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
 [0;90m - [0m      ^curl[0;36m@8.11.1[0m[0;94m~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl[0m[0;35m arch=linux-debian11-skylake_avx512[0m
@@ -697,7 +720,7 @@ spack:
 
 
 ```
-$ spack concretize --force
+ % spack concretize --force
 ```
 
 This helps Spack to produce more portable binaries (not specific to a micro-architecture).
@@ -710,7 +733,7 @@ This allows to reuse binaries from buildcaches more often.
 After installing packages, we can use the `spack find [spec]` command to query which packages are installed.
 
 ```
-$ spack find                 
+ % spack find                 
 ==> In environment gysela-io (28 root specs)
 [+] cmake@3.30             [+] kokkos-fft@0.4 host_backend=fftw-serial  [+] mpi                                  [+] pdiplugin-decl-netcdf@1.10.1:1.10+mpi  [+] pdiplugin-trace@1.10.1:1.10  [+] py-imageio@2.35     [+] py-pyyaml@6.0
 [+] ginkgo@1.9             [+] kokkos-kernels@4.7                       [+] paraconf@1.0                         [+] pdiplugin-mpi@1.10.1:1.10              [+] py-bokeh                     [+] py-matplotlib@3.9   [+] py-scipy@1.14
@@ -732,8 +755,8 @@ We can also use the `spack graph [spec]` command to view the entire DAG as a gra
 We build our application as usual, but from within the activated Spack environment:
 
 ```
-$ cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=external/gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
-$ cmake --build build -j 4 -t gys_io
+ % cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=external/gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
+ % cmake --build build -j 4 -t gys_io
 ```
 
 
@@ -760,7 +783,7 @@ find_package(KokkosKernels 4.5.1...<5 REQUIRED)
 Time to launch our application:
 
 ```
-$ export PYTHONPATH=~/gysela-mini-app_io/python:$PYTHONPATH && ./launch_script.sh
+ % export PYTHONPATH=~/gysela-mini-app_io/python:$PYTHONPATH && ./launch_script.sh
 ```
 
 <div class="w-full flex flex-row justify-center">
@@ -795,7 +818,7 @@ We can change Python or C++ sources, build again, and launch the simulation agai
 You can retrieve the generated images on your laptop:
 
 ```
-$ rsync -r lille.g5k:gysela-mini-app_io/gysela_plots/ .
+ % rsync -r lille.g5k:gysela-mini-app_io/gysela_plots/ .
 ```
 
 Have a look at the density at each iteration:
@@ -824,7 +847,7 @@ Have a look at the density at each iteration:
 What if we need to edit a package already in Spack like `py-deisa-dask`? The `spack develop` command marks the given spec as a 'develop' package:
 
 ```
-$ spack develop py-deisa-dask
+ % spack develop py-deisa-dask
 ```
 
 just updates the `spack.yaml` file:
@@ -855,7 +878,7 @@ Looking at the concretized specs using `spack spec`, you will see a "reserved" v
 Let's modify a source file (adding a simple `print()` statement):
 
 ```
-$ vim ~/spack/var/spack/environments/gysela-io/py-deisa-dask/src/deisa/dask/deisa.py
+ % vim ~/spack/var/spack/environments/gysela-io/py-deisa-dask/src/deisa/dask/deisa.py
 ```
 
 Now, `spack install` will automatically do an overwrite install if any of the local source files changes.
@@ -871,17 +894,17 @@ The following patch is required for our workflow and <span v-mark.red="1">will b
 
 
 ```
-$ git remote add fork https://github.com/thomas-bouvier/spack
-$ git fetch fork
-$ git stash
-$ git checkout feat/filter-develop-deps-from-cache
-$ git stash apply
+ % git remote add fork https://github.com/thomas-bouvier/spack
+ % git fetch fork
+ % git stash
+ % git checkout feat/filter-develop-deps-from-cache
+ % git stash apply
 ```
 
 Ok, we can just `spack install` to build the local copy of `py-deisa-dask`:
 
 ```
-$ spack install  # This will build the local copy
+ % spack install  # This will build the local copy
 ```
 
 ---
