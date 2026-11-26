@@ -60,7 +60,7 @@ layout: center
 - SSH into a computer center -- we use Grid'5000 in this tutorial.
 - Install Spack, discover some of its commands.
 - Install the Kokkos library.
-- Install and run a Gysela mini-app relying on Kokkos, and run it (optionally with GPU support).
+- Install and run a Gysela mini-app relying on Kokkos and DDC, and run it (optionally with GPU support).
 - Time for questions and discussion.
 
 
@@ -297,6 +297,8 @@ Spack does not fully achieve reproducibility, but it helps improve it.
 With Spack, `gcc` is typically brought by an external system package.
 
 
+
+
 ---
 
 ## Loading the compiler from the compute center
@@ -309,12 +311,6 @@ module av gcc
 ```
 ```console
    gcc-toolchain/10.5.0    gcc-toolchain/11.5.0    gcc-toolchain/12.5.0    gcc-toolchain/13.3.0    gcc-toolchain/14.3.0 (D)
-```
-
-You could do:
-
-```bash
-module load gcc-toolchain/12.5.0
 ```
 
 
@@ -352,10 +348,37 @@ Notice the <code class="color-pink">`target=nehalem %c=gcc@14.3.0`</code> in the
 
 
 
+
 ---
 
-## Bootstrapping Spack on Grid'5000
+## Where to install our packages?
 
+We are ready to run `spack install`. Where to do it?
+
+It depends on the computing center. <span v-mark.red="1">By default, you should compile on a compute node</span> (only 8 GB of RAM on Grid'5000 frontends).
+
+```ansi
+[0;90m# Interactive shell on a [0;33mCPU[0m partition[0m
+ % oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
+  -I -p [0;33mchiclet[0m -l host=1/core=4,walltime=2:00:00
+
+# Use chifflot for a GPU node with host=1/gpu=1
+```
+
+On Adastra, you can compile on the login node.
+
+
+
+---
+
+## Bootstrapping Spack on a Grid'5000 compute node
+
+We must remember to load Spack here:
+
+```
+ % . spack/share/spack/setup-env.sh
+ % module load gcc-toolchain/13
+```
 
 `spack config get` is useful to get a reconstruction of the current Spack config.
 
@@ -500,20 +523,20 @@ spack:
 
 We could build a CUDA-enabled kokkos instead:
 
-```ansi{1,2,6}
- % spack add kokkos+cuda cuda_arch=60
- -   rmajlzg  kokkos@5.1.1~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cuda_arch=60 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.2.0
+```ansi{1,2,5}
+ -   ptu2g25  kokkos@5.1.1~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning+wrapper build_system=cmake build_type=Release cuda_arch=80 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.2.0
 [+]  u7g2e3v      ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.2.0
 ...
 [+]  yonl2oe      ^compiler-wrapper@1.1.0 build_system=generic platform=linux os=debian13 target=nehalem 
- -   hyaqk2m      ^cuda@12.9.1~allow-unsupported-compilers~dev build_system=generic platform=linux os=debian13 target=nehalem 
- -   bimojkd          ^coreutils@9.10~gprefix build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
- -   4phcwny          ^gzip@1.14 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
- -   wwpmkxc          ^libxml2@2.13.9~http+pic~python+shared build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+ -   klacxxu      ^cuda@13.3.0~allow-unsupported-compilers~dev build_system=generic platform=linux os=debian13 target=nehalem 
+[+]  bimojkd          ^coreutils@9.10~gprefix build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+[+]  4phcwny          ^gzip@1.14 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+[+]  wwpmkxc          ^libxml2@2.13.9~http+pic~python+shared build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
+[+]  tzb2dww              ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
 ...
 ```
 
-Nodes `chifflot-[1-6]` are equipped with 2 x Tesla P100 GPUs (compute capability 6.0).
+Nodes `chuc-[1-8]` are equipped with 4 x NVIDIA A100 GPUs (compute capability 8.0).
 
 
 
@@ -526,23 +549,21 @@ Say I am developing a C++ app in the Gysela system:
 - Demonstrating I/O operations.
 - Testing the CPU performance scaling for 5D particle distribution functions.
 
-```
- % cd ~
- % git clone --recursive https://github.com/thomas-bouvier/gysela-mini-app_io
+```bash
+git clone --recursive https://github.com/thomas-bouvier/gysela-io ~/git-gysela-io
 ```
 
 **... the package for my app is not in Spack yet**
 
-- Actually, `py-gysela` is not even available in Spack (https://packages.spack.io/)
 - We have to declare all dependencies appearing in our app in a `spack.yaml` file.
 
 <v-click>
 
 The work of writing the `spack.yaml` file has been done in the repository you just cloned.
 
-```
- % rm ~/spack/var/spack/environments/gysela-io/spack.yaml
- % cp ~/gysela-mini-app_io/spack.yaml ~/spack/var/spack/environments/gysela-io/
+```bash
+rm ~/spack/var/spack/environments/gysela-io/spack.yaml
+cp ~/git-gysela-io/spack.yaml ~/spack/var/spack/environments/gysela-io/
 ```
 
 </v-click>
@@ -597,34 +618,6 @@ If you skip the concretization step `spack concretize`, `spack install` will con
 // ...
 ```
 
----
-
-## Where to install our packages?
-
-We are ready to run `spack install`. Where to do it?
-
-It depends on the computing center. <span v-mark.red="1">By default, you should compile on a compute node</span> (only 8 GB of RAM on Grid'5000 frontends).
-
-```ansi
-[0;90m# Interactive shell on a [0;33mCPU[0m partition[0m
- % oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
-  -I -p [0;33mchiclet[0m -l host=1/core=4,walltime=2:00:00
-
-# Use chifflot for a GPU node with host=1/gpu=1
-```
-
-<v-click>
-
-We must remember to load Spack here:
-
-```
- % . spack/share/spack/setup-env.sh
- % module load gcc/13
- % spack env activate gysela-io && spack install
-```
-
-</v-click>
-
 
 ---
 
@@ -646,18 +639,21 @@ Once merged, the fix can be retrieved using `spack repo update`.
 
 ## Using a binary cache (= buildcache / mirror)
 
-Compilation can take quite some time depending on your hardware: adding a binary cache may dramatically speeds up the process.
+Compilation can take quite some time depending on your hardware: adding a binary cache may dramatically speed up the process.
 
 ```yaml
 spack:
   specs:
   - ...
   mirrors: # [!code ++]
-    numpex-spack-mirror:  # [!code ++]
-      url: oci://ghcr.io/thomas-bouvier/numpex-spack-mirror  # [!code ++]
+    spack-stack: # [!code ++]
+      url: oci://ghcr.io/numpex/spack-stack # [!code ++]
+      binary: true # [!code ++]
+      source: false # [!code ++]
+      signed: false # [!code ++]
 ```
 
-Adding such a binary cache will influence the concretizer, which will try to reuse available binaries compatible with your specs.
+Adding a binary cache influences the concretizer, which will try to reuse binaries compatible with your specs.
 
 [Official documentation](https://spack.readthedocs.io/en/latest/binary_caches.html) on buildcaches.
 
@@ -667,34 +663,28 @@ Adding such a binary cache will influence the concretizer, which will try to reu
 ---
 
 ```ansi {1,2}
-tbouvier@chifflot-2  % spack spec
-[0;90m - [0m  cmake[0;36m@3.31.6[0m[0;94m~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^compiler-wrapper[0;36m@1.0[0m[0;94m build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^curl[0;36m@8.11.1[0m[0;94m~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m          ^nghttp2[0;36m@1.65.0[0m[0;94m build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m              ^diffutils[0;36m@3.10[0m[0;94m build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m                  ^libiconv[0;36m@1.17[0m[0;94m build_system=autotools libs:=shared,static[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m          ^openssl[0;36m@3.4.1[0m[0;94m~docs+shared build_system=generic certs=mozilla[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m              ^ca-certificates-mozilla[0;36m@2025-02-25[0m[0;94m build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m              ^perl[0;36m@5.40.0[0m[0;94m+cpanm+opcode+open+shared+threads build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m                  ^berkeley-db[0;36m@18.1.40[0m[0;94m+cxx~docs+stl build_system=autotools patches:=26090f4,b231fcc[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m                  ^bzip2[0;36m@1.0.8[0m[0;94m~debug~pic+shared build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m                  ^gdbm[0;36m@1.23[0m[0;94m build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m                      ^readline[0;36m@8.2[0m[0;94m build_system=autotools patches:=1ea4349,24f587b,3d9885e,5911a5b,622ba38,6c8adf8,758e2ec,79572ee,a177edc,bbf97f1,c7b45ff,e0013d9,e065038[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m          ^pkgconf[0;36m@2.3.0[0m[0;94m build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;95m[e][0m      ^gcc[0;36m@10.2.1[0m[0;94m~binutils+bootstrap~graphite~nvptx~piclibs~profiled~strip build_system=autotools build_type=RelWithDebInfo languages:='c,c++,fortran' patches:=0d13622,2c18531,b5e049d,bd4828c,cc6112d[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^gcc-runtime[0;36m@10.2.1[0m[0;94m build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;95m[e][0m      ^glibc[0;36m@2.31[0m[0;94m build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^gmake[0;36m@4.4.1[0m[0;94m~guile build_system=generic[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^ncurses[0;36m@6.5[0m[0;94m~symlinks+termlib abi=none build_system=autotools patches:=7a351bc[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m      ^zlib-ng[0;36m@2.2.4[0m[0;94m+compat+new_strategies+opt+pic+shared build_system=autotools[0m[0;35m arch=linux-debian11-skylake_avx512[0m
-[0;90m - [0m  kokkos[0;36m@4.6.00[0m[0;94m~aggressive_vectorization~cmake_lang~compiler_warnings+complex_align~cuda~debug~debug_bounds_check~debug_dualview_modify_check~deprecated_code~examples~hip_relocatable_device_code~hpx~hpx_async_dispatch~hwloc~ipo~memkind~numactl~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=17 generator=make intel_gpu_arch=none[0m[0;35m arch=linux-debian11-skylake_avx512[0m
+tbouvier@chiclet-1  % spack spec
+[92m[+][0m  cmake[0;36m@3.30.9[0m[0;94m~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release patches=dbc3892,fdea723[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[96m[b][0m      ^compiler-wrapper[0;36m@1.0[0m[0;94m build_system=generic[0m[0;35m platform=linux os=debian11 target=x86_64[0m
+[92m[+][0m      ^curl[0;36m@8.15.0[0m[0;94m~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[92m[+][0m          ^nghttp2[0;36m@1.67.1[0m[0;94m build_system=autotools[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[96m[b][0m              ^diffutils[0;36m@3.12[0m[0;94m build_system=autotools[0m[0;35m platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0[0m
+[92m[+][0m          ^openssl[0;36m@3.6.1[0m[0;94m~docs+shared build_system=generic certs=mozilla[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[96m[b][0m              ^ca-certificates-mozilla[0;36m@2026-03-19[0m[0;94m build_system=generic[0m[0;35m platform=linux os=debian11 target=x86_64[0m
+[95m[e][0m      ^gcc[0;36m@13.2.0[0m[0;94m+binutils+bootstrap~graphite~libsanitizer~mold~nvptx~piclibs~profiled~strip build_system=autotools build_type=RelWithDebInfo languages:='c,c++,fortran'[0m[0;35m platform=linux os=debian11 target=x86_64[0m
+[92m[+][0m      ^gcc-runtime[0;36m@13.2.0[0m[0;94m build_system=generic[0m[0;35m platform=linux os=debian11 target=x86_64[0m
+[95m[e][0m      ^glibc[0;36m@2.31[0m[0;94m build_system=autotools[0m[0;35m platform=linux os=debian11 target=x86_64[0m
+[92m[+][0m      ^gmake[0;36m@4.4.1[0m[0;94m~guile build_system=generic[0m[0;35m platform=linux os=debian11 target=x86_64 %c=gcc@13.2.0[0m
+[92m[+][0m      ^ncurses[0;36m@6.6[0m[0;94m~symlinks+termlib abi=none build_system=autotools patches=7a351bc[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[92m[+][0m      ^zlib-ng[0;36m@2.3.3[0m[0;94m+compat+new_strategies+opt+pic+shared build_system=autotools[0m[0;35m platform=linux os=debian11 target=x86_64 %c,cxx=gcc@13.2.0[0m
+[92m[+][0m  kokkos[0;36m@4.7.03[0m[0;94m~aggressive_vectorization~atomics_bypass~cmake_lang~compiler_warnings+complex_align~cuda~debug~debug_bounds_check+debug_dualview_modify_check~deprecated_code~hip_relocatable_device_code~hpx~hpx_async_dispatch~hwloc~ipo~memkind~numactl~openmp~openmptarget+pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=17 generator=make intel_gpu_arch=none[0m[0;35m platform=linux os=debian11 target=x86_64 %cxx=gcc@13.2.0[0m
 ```
 
 <br/>
 
-- <code class="text-pink">arch=linux-debian11-skylake_avx512</code> When concretized on the machine `chifflot-2`.
-- <code class="text-pink">arch=linux-ubuntu24.04-icelake</code> When concretized on a laptop running Ubuntu.
+- <code class="text-pink">os=debian11 %gcc@13.2.0</code> The concretizer adopted the OS and compiler of the cached binaries from the Numpex buildcache, even when your machine runs a different OS. This maximizes binary reuse.
+- <code class="text-pink">target=x86_64</code> The micro-architecture is locked in our `spack.yaml` (see the next slide).
+- <code class="text-pink">[+]</code> installed · <code class="text-pink">[b]</code> available in the binary cache · <code class="text-pink">[e]</code> external package
 
 <style>
 pre {
@@ -734,11 +724,37 @@ After installing packages, we can use the `spack find [spec]` command to query w
 
 ```
  % spack find                 
-==> In environment gysela-io (28 root specs)
-[+] cmake@3.30             [+] kokkos-fft@0.4 host_backend=fftw-serial  [+] mpi                                  [+] pdiplugin-decl-netcdf@1.10.1:1.10+mpi  [+] pdiplugin-trace@1.10.1:1.10  [+] py-imageio@2.35     [+] py-pyyaml@6.0
-[+] ginkgo@1.9             [+] kokkos-kernels@4.7                       [+] paraconf@1.0                         [+] pdiplugin-mpi@1.10.1:1.10              [+] py-bokeh                     [+] py-matplotlib@3.9   [+] py-scipy@1.14
-[+] googletest@1.14+gmock  [+] kokkos-tools                             [+] pdi@1.10.1:1.10                      [+] pdiplugin-pycall@1.10.1:1.10           [+] py-deisa-dask                [+] py-netcdf4@1.7+mpi  [+] py-sympy@1.13
-[+] kokkos@4.7+serial      [+] lapack                                   [+] pdiplugin-decl-hdf5@1.10.1:1.10+mpi  [+] pdiplugin-set-value@1.10.1:1.10        [+] py-h5py@3.12                 [+] py-numpy@2.1        [+] py-xarray@2024.7
+==> In environment gysela-io (30 root specs)
+[+] cmake@3.30
+[+] ddc@0.15+fft+pdi+splines
+[+] ginkgo@1.9
+[+] gmgpolar@2.3
+[+] googletest@1.14+gmock
+[+] kokkos@4.7+serial
+[+] kokkos-fft@0.4 host_backend=fftw-serial
+[+] kokkos-kernels@4.7
+[+] kokkos-tools
+[+] koliop@0.2
+[+] lapack
+[+] mpi
+[+] paraconf@1.0
+[+] pdi@1.11
+[+] pdiplugin-decl-hdf5@1.11+mpi
+[+] pdiplugin-mpi@1.11
+[+] pdiplugin-pycall@1.11
+[+] pdiplugin-set-value@1.11
+[+] pdiplugin-trace@1.11
+[+] py-bokeh
+[+] py-deisa-dask@0.6.2
+[+] py-h5py@3.12
+[+] py-imageio@2.35
+[+] py-matplotlib@3.9
+[+] py-netcdf4@1.7+mpi
+[+] py-numpy@2.1
+[+] py-pyyaml@6.0
+[+] py-scipy@1.14
+[+] py-sympy@1.13
+[+] py-xarray
 
 -- linux-debian11-x86_64 / %c,cxx,fortran=gcc@13.2.0 ------------
 py-scipy@1.14.1            ...
@@ -755,24 +771,33 @@ We can also use the `spack graph [spec]` command to view the entire DAG as a gra
 We build our application as usual, but from within the activated Spack environment:
 
 ```
- % cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=external/gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
- % cmake --build build -j 4 -t gys_io
+ % cd ~/git-gysela-io
+ % cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
+ % cmake --build build -j 4 -t gys_checkpointing
 ```
 
 
 ```cmake
-# gysela-mini-app_io/CMakeLists.txt
+# gysela-io/CMakeLists.txt
 cmake_minimum_required(VERSION 3.25)
-project(gysela-mini-app_io C CXX)
-add_subdirectory(external/gyselalibxx)
+project(gysela-mini-app_io CXX)
+
+find_package(DDC REQUIRED COMPONENTS pdi)
+find_package(MPI REQUIRED COMPONENTS CXX)
+find_package(paraconf REQUIRED COMPONENTS C)
+find_package(PDI REQUIRED COMPONENTS C)
+add_subdirectory(gyselalibxx)
 ```
 
 ```cmake
-# gyselaxx/CMakeLists.txt
+# gyselalibxx/CMakeLists.txt
 project(gyselalibxx C CXX)
 
-find_package(Kokkos 4.4.1...<5 REQUIRED)
-find_package(KokkosKernels 4.5.1...<5 REQUIRED)
+find_package(Kokkos 4.4.1...<6 REQUIRED)
+find_package(KokkosKernels 4.5.1...<6 REQUIRED)
+find_package(DDC 0.15.0 REQUIRED COMPONENTS fft pdi splines)
+find_package(koliop 0.2.0 REQUIRED)
+find_package(GMGPolar 2.3.1 REQUIRED)
 ...
 ```
 
@@ -782,9 +807,17 @@ find_package(KokkosKernels 4.5.1...<5 REQUIRED)
 
 Time to launch our application:
 
+```bash
+ % cd ~/git-gysela-io
+ % ./simulations/checkpointing/deisa-dask_launch_script.sh 1 1
 ```
- % export PYTHONPATH=~/gysela-mini-app_io/python:$PYTHONPATH && ./launch_script.sh
-```
+
+- `<nsimu_procs>`: number of MPI ranks for the simulation
+- `<nworker_proc>`: number of Dask workers for the analytics
+
+The launch script activates the `gysela-io` Spack environment by itself, and takes care of the Python environment: no manual `PYTHONPATH` export is needed anymore.
+
+For a multi-node run on Grid'5000, use `simulations/checkpointing/oar_deisa-dask_launch_script.sh` instead.
 
 <div class="w-full flex flex-row justify-center">
 
@@ -815,13 +848,28 @@ We can change Python or C++ sources, build again, and launch the simulation agai
 
 ## Quick look at the Gysela output
 
-You can retrieve the generated images on your laptop:
+At every iteration, the analytics writes the computed fluid moments to HDF5 files. You can retrieve them on your laptop:
 
 ```
- % rsync -r lille.g5k:gysela-mini-app_io/gysela_plots/ .
+ % rsync -r lille.g5k:git-gysela-io/output/ .
 ```
 
-Have a look at the density at each iteration:
+```
+ % ls output/
+normal_fluid_moments_0.h5 ... normal_fluid_moments_9.h5
+```
+
+Let's plot the density at the last iteration with a few lines of Python:
+
+```python
+import h5py, matplotlib.pyplot as plt
+with h5py.File("output/normal_fluid_moments_9.h5") as f:
+    plt.imshow(f["density"][0, 0])  # species 0, first radial slice
+    plt.colorbar()
+    plt.savefig("density_iter_9.jpg")
+```
+
+The density at each iteration:
 
 <div class="grid grid-cols-5 gap-2">
   <img src="./gysela_output/density/iter_0.jpg" class="w-full h-24 object-cover rounded" />
@@ -842,7 +890,7 @@ Have a look at the density at each iteration:
 
 ---
 
-## Developing a package 1/3
+## Developing a package 1/2
 
 What if we need to edit a package already in Spack like `py-deisa-dask`? The `spack develop` command marks the given spec as a 'develop' package:
 
@@ -859,20 +907,20 @@ spack:
   - py-deisa-dask
   develop:
     py-deisa-dask:
-      spec: py-deisa-dask@=0.3.0
+      spec: py-deisa-dask@=0.6.2
 ```
 
 An existing path can be provided with `spack develop --path <path> <spec>`.
 
 ---
 
-## Developing a package 2/3
+## Developing a package 2/2
 
 Looking at the concretized specs using `spack spec`, you will see a "reserved" variant <span class="color-blue">dev_path=</span>.
 
 ```
--   py-deisa-dask@0.3.0 build_system=python_pip dev_path=/home/tbouvier/spack/var/spack/environments/gysela-io/py-deisa-dask platform=linux os=debian11 target=x86_64 
-[+]      ^py-deisa-core@0.1.0 build_system=python_pip platform=linux os=debian11 target=x86_64 
+-   py-deisa-dask@0.6.2 build_system=python_pip dev_path=/home/tbouvier/spack/var/spack/environments/gysela-io/py-deisa-dask platform=linux os=debian11 target=x86_64
+[+]      ^py-deisa-core@0.6.0 build_system=python_pip platform=linux os=debian11 target=x86_64
 ```
 
 Let's modify a source file (adding a simple `print()` statement):
@@ -886,11 +934,11 @@ Now, `spack install` will automatically do an overwrite install if any of the lo
 
 ---
 
-## We need a patch first :( 3/3
+## Binary cache with spack develop
 
 Currently, specs marked as 'develop' interfere with the buildcache. We do not want this.
 
-The following patch is required for our workflow and <span v-mark.red="1">will be merged very soon in upstream Spack</span>.
+The following patch is required for our workflow and <span v-mark.red="1">is not yet merged in upstream Spack</span>.
 
 
 ```

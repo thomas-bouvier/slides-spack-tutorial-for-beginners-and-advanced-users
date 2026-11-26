@@ -69,7 +69,7 @@ layout: center
 
   <v-click>
 
-  - Non exhaustive list of direct dependencies: `DDC`, `Eigen`, `Koliop`, `Kokkos`, `kokkos-fft`, `Kokkos Kernels`, `Ginkgo`, `MPI`, `PDI`, `NetCDF`, `HDF5`, `Dask`, `Xarray`, `h5py`, `matplotlib`...
+  - Non exhaustive list of direct dependencies: `DDC`, `Eigen`, `Koliop`, `Kokkos`, `kokkos-fft`, `Kokkos Kernels`, `Ginkgo`, `GMGPolar`, `MPI`, `PDI`, `NetCDF`, `HDF5`, `Dask`, `Xarray`, `h5py`, `matplotlib`...
 
   </v-click>
 
