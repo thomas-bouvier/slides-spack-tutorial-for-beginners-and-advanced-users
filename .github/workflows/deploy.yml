@@ -26,7 +26,7 @@ jobs:
 
       - run: npm ci
 
-      - run: npm run build -- --base /slides-spack-tutorial-for-beginners/
+      - run: npm run build -- --base /slides-spack-tutorial-for-beginners-and-advanced-users/
 
       - uses: actions/upload-pages-artifact@v3
         with:
