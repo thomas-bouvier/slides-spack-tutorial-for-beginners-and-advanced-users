@@ -254,6 +254,35 @@ When executing the first command that needs recipes (`spack list`, `spack instal
 spack cd --repo builtin
 ```
 
+
+---
+
+## Updating the package recipes repository
+
+The recipes branch pinned by default (`releases/v2026.06` for Spack 1.2.2) may miss recent packages: the Gysela app we will build later depends on `gmgpolar`, which only exists in newer recipes
+
+<v-click>
+
+Let's configure a more recent recipes branch:
+
+```bash
+spack config --scope defaults:base add repos:builtin:branch:releases/v2026.10
+```
+
+</v-click>
+
+<v-click>
+
+`spack repo update` clones the recipes repository at the configured branch (or updates an existing clone):
+
+```ansi
+ % spack repo update
+==> builtin: Updated successfully.
+```
+
+</v-click>
+
+
 ---
 
 ## Finding a package
