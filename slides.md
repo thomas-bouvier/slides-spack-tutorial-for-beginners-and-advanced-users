@@ -269,6 +269,8 @@ Let's configure a more recent recipes branch:
 spack config --scope defaults:base add repos:builtin:branch:releases/v2026.10
 ```
 
+<span class="text-xs opacity-60">Available branches: <code>git ls-remote --heads https://github.com/spack/spack-packages.git</code></span>
+
 </v-click>
 
 <v-click>
