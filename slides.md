@@ -456,17 +456,23 @@ spack:
 
 We could build a CUDA-enabled kokkos instead:
 
-```ansi{1,2,5}
- -   ptu2g25  kokkos@5.1.1~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning+wrapper build_system=cmake build_type=Release cuda_arch=80 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.2.0
-[+]  u7g2e3v      ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.2.0
+```bash
+spack add kokkos+cuda cuda_arch=80
+```
+
+```bash
+ -   xg7ab5t  kokkos@5.1.1~aggressive_vectorization~alloc_async~cmake_lang+complex_align+cuda~cuda_constexpr~cuda_relocatable_device_code~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~h
+wloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning+wrapper build_system=cmake build_type=Release cuda_arch=80 cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=zen %cxx=
+gcc@14.2.0
 ...
-[+]  yonl2oe      ^compiler-wrapper@1.1.0 build_system=generic platform=linux os=debian13 target=nehalem 
- -   klacxxu      ^cuda@13.3.0~allow-unsupported-compilers~dev build_system=generic platform=linux os=debian13 target=nehalem 
-[+]  bimojkd          ^coreutils@9.10~gprefix build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
-[+]  4phcwny          ^gzip@1.14 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
-[+]  wwpmkxc          ^libxml2@2.13.9~http+pic~python+shared build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
-[+]  tzb2dww              ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@14.2.0
-...
+[+]  xprgddv      ^compiler-wrapper@1.1.0 build_system=generic platform=linux os=debian13 target=zen 
+[+]  n5po5c7      ^cuda@13.3.0~allow-unsupported-compilers~dev build_system=generic platform=linux os=almalinux9 target=x86_64 
+[+]  226gm7f          ^coreutils@9.10~gprefix build_system=autotools platform=linux os=almalinux9 target=x86_64 %c=gcc@11.5.0
+....
+[e]  vwqmlke      ^gcc@14.2.0+binutils+bootstrap~graphite+libsanitizer~mold~nvptx~piclibs~profiled~strip build_system=autotools build_type=RelWithDebInfo languages:='c,c++,fortran' platform=linux os=debian13 targ
+et=x86_64 
+[+]  7t2tqv3      ^gcc-runtime@14.2.0 build_system=generic platform=linux os=debian13 target=zen 
+[e]  dln4y65      ^glibc@2.41 build_system=autotools platform=linux os=debian13 target=x86_64
 ```
 
 Nodes `chuc-[1-8]` are equipped with 4 x NVIDIA A100 GPUs (compute capability 8.0).
