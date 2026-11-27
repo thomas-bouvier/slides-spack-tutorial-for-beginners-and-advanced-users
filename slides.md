@@ -109,9 +109,9 @@ Host *.g5k
 
 ## Where to install our packages?
 
-Compilation can be resource-intensive, there are only 8 GB of RAM on Grid'5000 frontends
+Compilation can be resource-intensive, there are only 8 GB of RAM on Grid'5000 frontend nodes
 
-<span v-mark.red="1">By default, you should compile on a compute node</span>.
+<span v-mark.red="1">By default, you should compile on a compute node</span>
 
 ```bash
 # Interactive shell on a CPU partition
@@ -123,10 +123,12 @@ oarsub --project lab-2026-numpex-spack-tutorial-v2 -t allowed=special \
   -I -p chuc -l host=1/gpu=1,walltime=2:00:00
 ```
 
-On Adastra, you can compile on the login node.
+On Adastra, you can compile on the login node
 
-
-
+```bash
+ssh user@adastra.cines.fr
+# you're good
+```
 
 
 
@@ -184,6 +186,48 @@ spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
 </v-click>
 
 
+
+
+
+
+---
+
+## Compilers
+
+Make Spack aware of the system `gcc`:
+
+```
+ % spack compiler find
+==> Added 1 new compiler to /home/tbouvier/.spack/packages.yaml
+    gcc@14.2.0
+```
+
+```
+ % spack compilers
+==> Available compilers
+-- gcc debian13-x86_64 ------------------------------------------
+[e]  gcc@14.2.0
+```
+
+The [e] flag means the compiler was detected as external: these packages do not come from the recipes repository but from the system
+
+
+---
+
+Spack's can reuse external dependencies from the system, while Guix (and Nix) is completely isolated down to `glibc`.
+
+For this reason, Spack does not fully achieve reproducibility, but it helps improve it.
+
+<div class="flex justify-center">
+  <img src="./guix-v-spack.svg" class="h-65 rounded-xl">
+</div>
+
+With Spack, `gcc` is typically brought by an external system package.
+
+
+
+
+
 ---
 
 ## Package recipes repository
@@ -209,31 +253,6 @@ When executing the first command that needs recipes (`spack list`, `spack instal
 ```bash
 spack cd --repo builtin
 ```
-
-
----
-
-## Compilers
-
-```
- % spack compiler list
-==> Available compilers
--- gcc debian13-x86_64 ------------------------------------------
-[e]  gcc@13.2.0  [e]  gcc@10.2.1
-```
-
-The [e] flag means the compiler was detected as external: these packages do not come from the recipes repository
-
-Let's remove the most recent compiler for now:
-
-```
- % spack compiler remove gcc@13.2.0
-==> The following compilers have been removed:
-
-    gcc@=13.2.0
-```
-
-
 
 ---
 
@@ -263,22 +282,23 @@ You can also use `spack list 'py-*'`.
 
 ## Package specs
 
-```ansi{1,2}
- % spack spec kokkos               
- -   kokkos@4.7.04~aggressive_vectorization~atomics_bypass~cmake_lang~compiler_warnings+complex_align~cuda~debug~debug_bounds_check+debug_dualview_modify_check~deprecated_code~hip_relocatable_device_code~hpx~hpx_async_dispatch~hwloc~ipo~memkind~numactl~openmp~openmptarget~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=17 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@10.2.1
- -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
- -           ^curl@8.20.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
- -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
- -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@10.2.1
- -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@10.2.1
- -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian13 target=nehalem %c,cxx=gcc@10.2.1
+```ansi{1,2,6}
+ % spack spec kokkos                                                                                  
+ -   kokkos@5.1.1~aggressive_vectorization~cmake_lang+complex_align~cuda~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=zen %cxx=gcc@14.2.0
+ -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=zen %c,cxx=gcc@14.2.0
+ -           ^curl@8.20.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian13 target=zen %c,cxx=gcc@14.2.0
 ...
+[e]      ^gcc@14.2.0+binutils+bootstrap~graphite+libsanitizer~mold~nvptx~piclibs~profiled~strip build_system=autotools build_type=RelWithDebInfo languages:='c,c++,fortran' platform=linux os=debian13 target=x86_64 
+ -       ^gcc-runtime@14.2.0 build_system=generic platform=linux os=debian13 target=zen 
+[e]      ^glibc@2.41 build_system=autotools platform=linux os=debian13 target=x86_64 
+ -       ^gmake@4.4.1~guile build_system=generic platform=linux os=debian13 target=zen %c=gcc@14.2.0
+
 ```
 
 Instead of package names, Spack uses **package specs**: a concrete spec is like a name, but it has a version, compiler, architecture, and build options associated with it.
 
 <code>
-kokkos <span class="color-cyan">@4.7.04</span> <span class="color-blue">~aggressive_vectorization ~atomics_bypass</span> ...
+kokkos <span class="color-cyan">@5.1.1</span> <span class="color-blue">~aggressive_vectorization ~cmake_lang</span> ...
 </code>
 
 Going from a package name to such a concrete spec is called **concretizing**.
@@ -288,19 +308,19 @@ Going from a package name to such a concrete spec is called **concretizing**.
 Spec documentation: https://spack.readthedocs.io/en/latest/package_fundamentals.html#specs-dependencies
 
 <code>
-kokkos <span class="color-cyan">@4.7.04</span> <span class="color-blue">~aggressive_vectorization</span> <span class="color-pink">target=nehalem %cxx=gcc@10.2.1</span>
+kokkos <span class="color-cyan">@5.1.1</span> <span class="color-blue">~aggressive_vectorization</span> <span class="color-pink">target=zen %cxx=gcc@14.2.0</span>
 </code>
 
-- <code class="color-cyan">@4.7.04</code>: [Version specifier](https://spack.readthedocs.io/en/latest/basic_usage.html#version-specifier).
+- <code class="color-cyan">@5.1.1</code>: [Version specifier](https://spack.readthedocs.io/en/latest/basic_usage.html#version-specifier).
   - Spack concretizes packages to a fixed version <code class="color-cyan">@X.Y.Z</code>.
   - As a user, you can specify a version range, e.g:
-    - <code class="color-cyan">@4.7:</code>: Take <code class="color-cyan">@4.7.00</code>, <code class="color-cyan">@4.7.01</code>, etc. / <code class="color-cyan">@:5</code>: Up to v5 included <code class="color-cyan">@5.0.0</code>, <code class="color-cyan">@5.1.0</code>, etc.
+    - <code class="color-cyan">@4.7:</code>: Take <code class="color-cyan">@4.7.0</code>, <code class="color-cyan">@4.7.1</code>, etc. / <code class="color-cyan">@:5</code>: Up to v5 included <code class="color-cyan">@5.0.0</code>, <code class="color-cyan">@5.1.0</code>, etc.
 - <code class="color-blue">~aggressive_vectorization</code>: Variant specifier.
   - <code class="color-blue">+</code> means the feature is enabled / <code class="color-blue">~</code> means the feature is disabled.
   - Variants can also be <code class="color-blue">name=value</code> pairs.
-- <code class="color-pink">target=nehalem</code>: Target specifier.
+- <code class="color-pink">target=zen</code>: Target specifier.
   - Similar to variants, but present in all packages.
-- <code class="color-pink">%cxx=gcc@10.2.1</code>: Dependencies on compilers are also modeled by specs.
+- <code class="color-pink">%cxx=gcc@14.2.0</code>: Dependencies on compilers are also modeled by specs.
 
 ---
 
@@ -318,93 +338,6 @@ Result is what you see from `spack spec`, the actual dependency tree of concrete
 <code>A<span class="color-cyan">@1.2:</span><span class="color-blue">+mpi+cuda</span></code> will be installed.
 
 For a given set of specs, the concretizer solves all constraints (SAT problem) to generate a DAG of concrete dependencies.
-
-
----
-
-## Concretizing `kokkos@5`
-
-```
- % spack spec kokkos@5     
-==> Error: failed to concretize `kokkos@5` for the following reasons:
-     1. kokkos: '%gcc@:10.3' conflicts with '@5:'
-     2. kokkos: '%gcc@:10.3' conflicts with '@5:'
-        required because conflict is triggered when %gcc@:10.3 
-          required because gcc-runtime depends on gcc 
-          required because kokkos@5 requested explicitly
-```
-
-The concretizer cannot solve the set of constraints needed by `kokkos@5`: a recent `gcc` is needed.
-
-```
- % spack compiler list 
-==> Available compilers
--- gcc debian11-x86_64 ------------------------------------------
-[e]  gcc@10.2.1
-```
-
-
----
-
-Spack's concretizer also considers external dependencies from the system, while Guix (and Nix) is completely isolated down to `glibc`.
-
-Spack does not fully achieve reproducibility, but it helps improve it.
-
-<div class="flex justify-center">
-  <img src="./guix-v-spack.svg" class="h-65 rounded-xl">
-</div>
-
-With Spack, `gcc` is typically brought by an external system package.
-
-
-
-
----
-
-## Loading the compiler from the compute center
-
-
-Let's inspect modules made available to us on Grid'5000:
-
-```bash
-module av gcc
-```
-```console
-   gcc-toolchain/10.5.0    gcc-toolchain/11.5.0    gcc-toolchain/12.5.0    gcc-toolchain/13.3.0    gcc-toolchain/14.3.0 (D)
-```
-
-
-The following command makes Spack aware of the <span v-mark.red="0">external system `gcc`</span>.
-
-```bash
-spack compiler find
-spack compiler list
-```
-
-The system `gcc@14.2.0` should have been configured in `~/.spack/packages.yaml`.
-
-
----
-
-```ansi{1,2}
- % spack spec kokkos@5          
- -   kokkos@5.1.1~aggressive_vectorization~cmake_lang+complex_align~cuda~debug~debug_bounds_check+deprecated_code~hip_relocatable_device_code~hpx~hwloc~ipo~openmp~pic~rocm+serial+shared~sycl~tests~threads~tuning~wrapper build_system=cmake build_type=Release cxxstd=20 generator=make intel_gpu_arch=none platform=linux os=debian13 target=nehalem %cxx=gcc@14.3.0
- -       ^cmake@3.31.11~doc+ncurses+ownlibs~qtgui build_system=generic build_type=Release platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
- -           ^curl@8.20.0~gssapi~ldap~libidn2~librtmp~libssh~libssh2+nghttp2 build_system=autotools libs:=shared,static tls:=openssl platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
- -               ^nghttp2@1.67.1 build_system=autotools platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
- -                   ^diffutils@3.12 build_system=autotools platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
- -                       ^libiconv@1.18 build_system=autotools libs:=shared,static platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
- -               ^openssl@3.6.1~docs+shared build_system=generic certs=mozilla platform=linux os=debian13 target=nehalem %c,cxx=gcc@14.3.0
- -                   ^ca-certificates-mozilla@2026-03-19 build_system=generic platform=linux os=debian13 target=nehalem 
- -                   ^perl@5.42.0+cpanm+opcode+open+shared+threads build_system=generic platform=linux os=debian13 target=nehalem %c=gcc@14.3.0
- ...
-```
-
-The concretization is now successfull for `kokkos@5`.
-
-Notice the <code class="color-pink">`target=nehalem %c=gcc@14.3.0`</code> in the concretized specs.
-
-
 
 
 
