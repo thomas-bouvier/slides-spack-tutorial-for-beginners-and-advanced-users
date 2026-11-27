@@ -83,8 +83,8 @@ These are some of the key insights to understand how Spack works:
 ## Running example: Kokkos → a Gysela app on Grid'5000
 
 
-```
- % ssh lille.g5k
+```bash
+ssh lille.g5k
 ```
 
 Connection guide: https://www.grid5000.fr/w/Getting_Started#Recommended_tips_and_tricks_for_an_efficient_use_of_Grid.275000
@@ -100,6 +100,34 @@ Host *.g5k
   ProxyCommand ssh g5k -W "$(basename %h .g5k):%p"
   ForwardAgent no
 ```
+
+
+
+
+
+---
+
+## Where to install our packages?
+
+Compilation can be resource-intensive, there are only 8 GB of RAM on Grid'5000 frontends
+
+<span v-mark.red="1">By default, you should compile on a compute node</span>.
+
+```bash
+# Interactive shell on a CPU partition
+oarsub --project lab-2026-numpex-spack-tutorial-v2 -t allowed=special \
+  -I -p chiclet -l host=1/core=4,walltime=2:00:00
+
+# Interactive shell on a A100 GPU partition
+oarsub --project lab-2026-numpex-spack-tutorial-v2 -t allowed=special \
+  -I -p chuc -l host=1/gpu=1,walltime=2:00:00
+```
+
+On Adastra, you can compile on the login node.
+
+
+
+
 
 
 ---
@@ -123,6 +151,38 @@ To install Spack, make sure you have Python & Git. Then, we must clone the repo 
 Spack core is installed in `~/spack`.
 
 
+---
+
+## Bootstrapping Spack on a Grid'5000 compute node
+
+`spack config get` is useful to get a reconstruction of the current Spack config.
+
+`spack config blame` is useful to understand the provenance of each config attribute.
+
+The following command will set <span v-mark.red="1">where packages will be built. Important on Grid'5000.</span>
+
+```bash
+spack config --scope defaults:base add config:build_stage:/tmp/spack-stage
+```
+
+You can also edit the config file manually as follows:
+
+```bash
+spack config --scope defaults:base edit config
+```
+
+
+<v-click>
+
+You may set the `install_tree` to [Group Storage](https://www.grid5000.fr/w/Group_Storage) over NFS:
+
+```bash
+ln -s /srv/storage/my-group-storage@storage1.lyon.grid5000.fr/ /my-spack
+spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
+```
+
+</v-click>
+
 
 ---
 
@@ -130,8 +190,8 @@ Spack core is installed in `~/spack`.
 
 Spack recipes are separate from Spack core.
 
-```
- % spack config blame repos
+```bash
+spack config blame repos
 ```
 
 The default config is as follows:
@@ -146,8 +206,8 @@ The default config is as follows:
 When executing the first command that needs recipes (`spack list`, `spack install`, ...), Spack clones that repository into `~/.spack/package_repos/<url-hash>/`
 
 
-```
- % spack cd --repo builtin
+```bash
+spack cd --repo builtin
 ```
 
 
@@ -347,66 +407,6 @@ Notice the <code class="color-pink">`target=nehalem %c=gcc@14.3.0`</code> in the
 
 
 
-
-
----
-
-## Where to install our packages?
-
-We are ready to run `spack install`. Where to do it?
-
-It depends on the computing center. <span v-mark.red="1">By default, you should compile on a compute node</span> (only 8 GB of RAM on Grid'5000 frontends).
-
-```ansi
-[0;90m# Interactive shell on a [0;33mCPU[0m partition[0m
- % oarsub --project lab-2026-numpex-spack-tutorial -t allowed=special \
-  -I -p [0;33mchiclet[0m -l host=1/core=4,walltime=2:00:00
-
-# Use chifflot for a GPU node with host=1/gpu=1
-```
-
-On Adastra, you can compile on the login node.
-
-
-
----
-
-## Bootstrapping Spack on a Grid'5000 compute node
-
-We must remember to load Spack here:
-
-```
- % . spack/share/spack/setup-env.sh
- % module load gcc-toolchain/13
-```
-
-`spack config get` is useful to get a reconstruction of the current Spack config.
-
-`spack config blame` is useful to understand the provenance of each config attribute.
-
-The following command will set <span v-mark.red="1">where packages will be built. Important on Grid'5000.</span>
-
-```bash
-spack config --scope defaults:base add config:build_stage:/tmp/spack-stage
-```
-
-You can also edit the config file manually as follows:
-
-```bash
-spack config --scope defaults:base edit config
-```
-
-
-<v-click>
-
-You may set the `install_tree` to [Group Storage](https://www.grid5000.fr/w/Group_Storage) over NFS:
-
-```bash
-ln -s /srv/storage/my-group-storage@storage1.lyon.grid5000.fr/ /my-spack
-spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
-```
-
-</v-click>
 
 
 ---
