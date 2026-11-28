@@ -196,6 +196,10 @@ spack config --scope defaults:base add config:install_tree:root:/my-spack/spack
 
 Make Spack aware of the system `gcc`:
 
+> [!WARNING]
+> Run this with **no module loaded** (check with `module list`).
+> On Grid'5000, loading e.g. `gcc-toolchain` first would also register the Guix compiler, which can break builds in confusing ways.
+
 ```
  % spack compiler find
 ==> Added 1 new compiler to /home/tbouvier/.spack/packages.yaml
@@ -740,11 +744,14 @@ We can also use the `spack graph [spec]` command to view the entire DAG as a gra
 
 We build our application as usual, but from within the activated Spack environment:
 
+```bash
+cd ~/git-gysela-io
+rm -rf build
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
+cmake --build build -j 4 -t gys_checkpointing
 ```
- % cd ~/git-gysela-io
- % cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=gyselalibxx/toolchains/cpu.spack.gyselalibxx_env/toolchain.cmake
- % cmake --build build -j 4 -t gys_checkpointing
-```
+
+The `rm -rf build` ensures CMake does not reuse a cached configuration from a previous attempt.
 
 
 ```cmake
@@ -771,6 +778,7 @@ find_package(GMGPolar 2.3.1 REQUIRED)
 ...
 ```
 
+
 ---
 
 ## Running our Gysela app
@@ -778,8 +786,8 @@ find_package(GMGPolar 2.3.1 REQUIRED)
 Time to launch our application:
 
 ```bash
- % cd ~/git-gysela-io
- % ./simulations/checkpointing/deisa-dask_launch_script.sh 1 1
+cd ~/git-gysela-io
+./simulations/checkpointing/deisa-dask_launch_script.sh 1 1
 ```
 
 - `<nsimu_procs>`: number of MPI ranks for the simulation

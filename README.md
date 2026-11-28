@@ -9,3 +9,8 @@ Note that this tutorial is part of the Numpex software integration strategy back
 ## Credits
 
 I reused a few slides by Fernando Ayats Llamas at [https://gitlab.inria.fr/numpex-pc5/wp3/spack-tutorial](https://gitlab.inria.fr/numpex-pc5/wp3/spack-tutorial).
+
+TODO
+
+tmux?
+meilleure explication de pourquoi on compile gysela à la main
